@@ -1,0 +1,107 @@
+<header class="toolbar">
+  <h1>Kandidatenrooster</h1>
+  <span class="werkvoorraad">Werkvoorraad ({{ werkvoorraad().length }})</span>
+</header>
+
+<p class="hint">
+  Klik met de rechtermuisknop op een afname (of Shift+F10) voor snelle acties. Klik op een afname
+  voor alle acties.
+</p>
+<p class="melding" role="status">{{ melding() }}</p>
+
+<app-context-menu
+  #afnameMenu
+  label="Acties voor afname"
+  [actions]="contextMenuActies"
+  (actionSelected)="onContextMenuActie($event)"
+/>
+
+<div class="rooster" [style.--slots]="aantalSlots">
+  @for (kolom of kolommen; track kolom; let i = $index) {
+    <div class="rooster__kop" [style.grid-column]="i + 2">{{ kolom }}</div>
+  }
+
+  @for (uur of uren; track uur.label) {
+    <div class="rooster__uur" [style.grid-row]="uur.rijen">{{ uur.label }}</div>
+    <div class="rooster__lijn" [style.grid-row]="uur.rijen"></div>
+  }
+
+  @for (pauze of pauzes; track pauze.kolom) {
+    <div
+      class="pauze"
+      [style.grid-column]="kolomVan(pauze.kolom)"
+      [style.grid-row]="rijen(pauze.start, pauze.eind)"
+    >
+      <span>{{ pauze.start }} - {{ pauze.eind }}</span>
+      <span>PAUZE</span>
+    </div>
+  }
+
+  @for (afname of afnames(); track afname.id) {
+    <button
+      type="button"
+      class="afname"
+      [class.afname--conflict]="afname.conflict"
+      [style.grid-column]="kolomVan(afname.kolom)"
+      [style.grid-row]="rijen(afname.start, afname.eind)"
+      [appContextMenu]="afnameMenu"
+      [appContextMenuContext]="afname"
+      (click)="openDrawer(afname)"
+    >
+      <span class="afname__kop">
+        @if (afname.vastgezet) {
+          <svg class="afname__slot" viewBox="0 0 24 24" role="img" aria-label="Vastgezet">
+            <path
+              d="M6 10V8a6 6 0 1 1 12 0v2h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h1Zm2 0h8V8a4 4 0 1 0-8 0v2Zm4 4a1.5 1.5 0 0 0-1 2.6V19h2v-2.4a1.5 1.5 0 0 0-1-2.6Z"
+            />
+          </svg>
+        }
+        @if (afname.conflict) {
+          <span class="visually-hidden">Conflict</span>
+        }
+        <span class="afname__labels">
+          <span class="label label--leerweg">{{ afname.leerweg }}</span>
+          <span class="label label--vak">{{ afname.vak }}</span>
+        </span>
+      </span>
+      <span>{{ afname.start }} - {{ afname.eind }}</span>
+      <span>{{ afname.kandidaatnummer }} | {{ afname.kandidaat }}</span>
+    </button>
+  }
+</div>
+
+@if (drawerAfname(); as afname) {
+  <aside class="drawer" aria-labelledby="drawer-titel">
+    <div class="drawer__kop">
+      <h2 id="drawer-titel" #drawerTitel tabindex="-1">Afname {{ afname.kolom }}</h2>
+      <button type="button" class="drawer__sluit" aria-label="Sluit" (click)="sluitDrawer()">
+        ×
+      </button>
+    </div>
+    <dl class="drawer__details">
+      <dt>Tijd</dt>
+      <dd>{{ afname.start }} - {{ afname.eind }}</dd>
+      <dt>Kandidaat</dt>
+      <dd>{{ afname.kandidaatnummer }} | {{ afname.kandidaat }}</dd>
+      <dt>Status</dt>
+      <dd>{{ afname.vastgezet ? 'Vastgezet' : 'Los' }}{{ afname.conflict ? ', conflict' : '' }}</dd>
+    </dl>
+    <h3>Acties</h3>
+    <ul class="drawer__acties">
+      @for (actie of drawerActies; track actie.id) {
+        @if (!actie.hidden?.(afname)) {
+          <li>
+            <button
+              type="button"
+              class="btn"
+              [disabled]="actie.disabled?.(afname)"
+              (click)="voerUit(actie, afname)"
+            >
+              {{ actie.label }}
+            </button>
+          </li>
+        }
+      }
+    </ul>
+  </aside>
+}

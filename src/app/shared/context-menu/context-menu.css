@@ -1,0 +1,41 @@
+/* Wordt gerenderd in de CDK-overlaycontainer; de waarden volgen het Uno-designsysteem (DUO). */
+.context-menu {
+  display: flex;
+  flex-direction: column;
+  min-width: 240px;
+  padding-block: 4px;
+  background-color: #fff;
+  box-shadow: 0 2px 6px #00000026;
+  color: #2b2b2b;
+  font-family: RijksoverheidSans, Helvetica, Arial, sans-serif;
+}
+
+.context-menu__item {
+  padding: 12px 24px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 18px;
+  line-height: 1.5;
+  text-align: start;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.context-menu__item:hover,
+.context-menu__item:focus {
+  background-color: #e5f0f9;
+  outline: none;
+}
+
+.context-menu__item:focus-visible {
+  outline: 2px solid #007bc7;
+  outline-offset: -2px;
+}
+
+.context-menu__item[aria-disabled='true'] {
+  background: none;
+  color: #767676;
+  cursor: default;
+}
