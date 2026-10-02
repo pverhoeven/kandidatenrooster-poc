@@ -1,0 +1,43 @@
+/* Neutral 200/300 benaderd; controleer de exacte waarden met de Uno-tokens. */
+:host {
+  display: inline-flex;
+}
+
+.overflow-menu-knop {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  color: #2b2b2b;
+  cursor: pointer;
+}
+
+.overflow-menu-knop svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.overflow-menu-knop:hover {
+  background-color: #e6e6e6;
+}
+
+.overflow-menu-knop:active,
+.overflow-menu-knop.overflow-menu-open {
+  background-color: #cccccc;
+}
+
+.overflow-menu-knop:focus-visible {
+  outline: 2px solid #007bc7;
+  outline-offset: 2px;
+}
+
+.overflow-menu-knop:disabled {
+  background-color: transparent;
+  color: #767676;
+  cursor: default;
+}

@@ -65,12 +65,16 @@ h1 {
   pointer-events: none;
 }
 
+.afname-cel,
+.pauze {
+  margin-block: 2px;
+}
+
 .afname,
 .pauze {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin-block: 2px;
   padding: 4px 12px 4px 20px;
   font-size: 18px;
   line-height: 1.4;
@@ -78,9 +82,15 @@ h1 {
   overflow: hidden;
 }
 
-.afname {
+/* Stacking context, zodat tegel en ⋮-knop onder de sticky kolomkoppen blijven. */
+.afname-cel {
   position: relative;
   z-index: 0;
+  display: grid;
+}
+
+.afname {
+  padding-inline-end: 40px;
   border: 0;
   border-left: 12px solid #c3d5b0;
   background-color: #e1eddb;
@@ -90,7 +100,8 @@ h1 {
 }
 
 .afname:hover,
-.afname.context-menu-open {
+.afname.context-menu-open,
+.afname-cel:has(.overflow-menu-open) .afname {
   background-color: #d4e4cb;
 }
 
@@ -105,8 +116,16 @@ h1 {
 }
 
 .afname--conflict:hover,
-.afname--conflict.context-menu-open {
+.afname--conflict.context-menu-open,
+.afname-cel:has(.overflow-menu-open) .afname--conflict {
   background-color: #ecc9c9;
+}
+
+/* Onder de labels, zodat hij ook bij lange afnames in beeld staat. */
+.afname-cel__menu {
+  position: absolute;
+  top: 30px;
+  right: 4px;
 }
 
 .afname__kop {

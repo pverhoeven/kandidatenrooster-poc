@@ -4,8 +4,8 @@
 </header>
 
 <p class="hint">
-  Klik met de rechtermuisknop op een afname (of Shift+F10) voor snelle acties. Klik op een afname
-  voor alle acties.
+  Klik op ⋮ bij een afname, of met de rechtermuisknop op de afname (of Shift+F10), voor snelle
+  acties. Klik op een afname voor alle acties.
 </p>
 <p class="melding" role="status">{{ melding() }}</p>
 
@@ -38,35 +38,45 @@
   }
 
   @for (afname of afnames(); track afname.id) {
-    <button
-      type="button"
-      class="afname"
-      [class.afname--conflict]="afname.conflict"
+    <div
+      class="afname-cel"
       [style.grid-column]="kolomVan(afname.kolom)"
       [style.grid-row]="rijen(afname.start, afname.eind)"
-      [appContextMenu]="afnameMenu"
-      [appContextMenuContext]="afname"
-      (click)="openDrawer(afname)"
     >
-      <span class="afname__kop">
-        @if (afname.vastgezet) {
-          <svg class="afname__slot" viewBox="0 0 24 24" role="img" aria-label="Vastgezet">
-            <path
-              d="M6 10V8a6 6 0 1 1 12 0v2h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h1Zm2 0h8V8a4 4 0 1 0-8 0v2Zm4 4a1.5 1.5 0 0 0-1 2.6V19h2v-2.4a1.5 1.5 0 0 0-1-2.6Z"
-            />
-          </svg>
-        }
-        @if (afname.conflict) {
-          <span class="visually-hidden">Conflict</span>
-        }
-        <span class="afname__labels">
-          <span class="label label--leerweg">{{ afname.leerweg }}</span>
-          <span class="label label--vak">{{ afname.vak }}</span>
+      <button
+        type="button"
+        class="afname"
+        [class.afname--conflict]="afname.conflict"
+        [appContextMenu]="afnameMenu"
+        [appContextMenuContext]="afname"
+        (click)="openDrawer(afname)"
+      >
+        <span class="afname__kop">
+          @if (afname.vastgezet) {
+            <svg class="afname__slot" viewBox="0 0 24 24" role="img" aria-label="Vastgezet">
+              <path
+                d="M6 10V8a6 6 0 1 1 12 0v2h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h1Zm2 0h8V8a4 4 0 1 0-8 0v2Zm4 4a1.5 1.5 0 0 0-1 2.6V19h2v-2.4a1.5 1.5 0 0 0-1-2.6Z"
+              />
+            </svg>
+          }
+          @if (afname.conflict) {
+            <span class="visually-hidden">Conflict</span>
+          }
+          <span class="afname__labels">
+            <span class="label label--leerweg">{{ afname.leerweg }}</span>
+            <span class="label label--vak">{{ afname.vak }}</span>
+          </span>
         </span>
-      </span>
-      <span>{{ afname.start }} - {{ afname.eind }}</span>
-      <span>{{ afname.kandidaatnummer }} | {{ afname.kandidaat }}</span>
-    </button>
+        <span>{{ afname.start }} - {{ afname.eind }}</span>
+        <span>{{ afname.kandidaatnummer }} | {{ afname.kandidaat }}</span>
+      </button>
+      <app-overflow-menu-knop
+        class="afname-cel__menu"
+        [menu]="afnameMenu"
+        [context]="afname"
+        [label]="'Acties voor afname ' + afname.kolom + ' ' + afname.start"
+      />
+    </div>
   }
 </div>
 

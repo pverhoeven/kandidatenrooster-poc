@@ -3,6 +3,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ContextMenu, ContextMenuAction, ContextMenuSelection } from './context-menu';
 import { ContextMenuTrigger } from './context-menu-trigger';
+import { OverflowMenuKnop } from './overflow-menu-knop';
 
 interface Item {
   naam: string;
@@ -10,7 +11,7 @@ interface Item {
 }
 
 @Component({
-  imports: [ContextMenu, ContextMenuTrigger],
+  imports: [ContextMenu, ContextMenuTrigger, OverflowMenuKnop],
   template: `
     <app-context-menu
       #menu
@@ -19,6 +20,7 @@ interface Item {
     />
     @for (item of items(); track item.naam) {
       <div class="item" [appContextMenu]="menu" [appContextMenuContext]="item">{{ item.naam }}</div>
+      <app-overflow-menu-knop [menu]="menu" [context]="item" [label]="'Acties voor ' + item.naam" />
     }
   `,
 })
@@ -149,6 +151,69 @@ describe('ContextMenu', () => {
 
       expect(document.querySelector('[role="menu"]')).toBeNull();
       expect(target.classList).not.toContain('context-menu-open');
+    });
+  });
+
+  describe('as overflow menu', () => {
+    const knop = (index: number) =>
+      fixture.nativeElement.querySelectorAll('.overflow-menu-knop')[index] as HTMLButtonElement;
+    const klik = async (index: number) => {
+      knop(index).click();
+      await fixture.whenStable();
+    };
+
+    it('opens on click with the same actions as the context menu', async () => {
+      expect(knop(0).getAttribute('aria-label')).toBe('Acties voor a');
+      expect(knop(0).getAttribute('aria-haspopup')).toBe('menu');
+
+      await klik(0);
+
+      expect(labels()).toEqual(['Open', 'Maak los', 'Verwijder']);
+      expect(knop(0).getAttribute('aria-expanded')).toBe('true');
+      expect(knop(0).classList).toContain('overflow-menu-open');
+    });
+
+    it('emits the selected action together with its context', async () => {
+      await klik(1);
+      menuItems()[0].click();
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.selected).toEqual([
+        { action: fixture.componentInstance.actions[0], context: { naam: 'b', vast: false } },
+      ]);
+      expect(document.querySelector('[role="menu"]')).toBeNull();
+      expect(knop(1).classList).not.toContain('overflow-menu-open');
+    });
+
+    it('closes on a second click', async () => {
+      await klik(0);
+      await klik(0);
+
+      expect(document.querySelector('[role="menu"]')).toBeNull();
+      expect(knop(0).getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('is disabled when no action is visible for the context', async () => {
+      fixture.componentInstance.alleenVerborgen.set(true);
+      await fixture.whenStable();
+
+      expect(knop(0).disabled).toBe(true);
+    });
+
+    it('closes the menu when the button is scrolled out of view', async () => {
+      await klik(0);
+
+      vi.spyOn(knop(0), 'getBoundingClientRect').mockReturnValue({
+        left: 0,
+        top: -100,
+        right: 32,
+        bottom: -68,
+      } as DOMRect);
+      document.body.dispatchEvent(new Event('scroll'));
+      await fixture.whenStable();
+      vi.restoreAllMocks();
+
+      expect(document.querySelector('[role="menu"]')).toBeNull();
     });
   });
 });

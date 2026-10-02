@@ -6,6 +6,7 @@ import {
   isVisible,
 } from '../shared/context-menu/context-menu';
 import { ContextMenuTrigger } from '../shared/context-menu/context-menu-trigger';
+import { OverflowMenuKnop } from '../shared/context-menu/overflow-menu-knop';
 import { Afname, AFNAMES, KOLOMMEN } from './afname';
 
 const ROOSTER_START = '09:00';
@@ -24,7 +25,7 @@ const rijen = (start: string, eind: string) => {
   return `${van} / ${van + (minuten(eind) - minuten(start)) / SLOT_MINUTEN}`;
 };
 
-// All afname actions. The drawer shows all of them; the context menu a subset for quick access.
+// All afname actions. The drawer shows all of them; the menu (⋮ and right-click) a subset for quick access.
 const VERPLAATS: ContextMenuAction<Afname> = { id: 'verplaats', label: 'Verplaats afname' };
 const MAAK_LOS: ContextMenuAction<Afname> = {
   id: 'maak-los',
@@ -50,7 +51,7 @@ const BEKIJK_HISTORIE: ContextMenuAction<Afname> = {
 
 @Component({
   selector: 'app-kandidatenrooster',
-  imports: [ContextMenu, ContextMenuTrigger],
+  imports: [ContextMenu, ContextMenuTrigger, OverflowMenuKnop],
   templateUrl: './kandidatenrooster.html',
   styleUrl: './kandidatenrooster.css',
 })
