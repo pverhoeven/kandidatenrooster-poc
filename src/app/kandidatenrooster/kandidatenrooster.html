@@ -89,7 +89,7 @@
     <h3>Acties</h3>
     <ul class="drawer__acties">
       @for (actie of drawerActies; track actie.id) {
-        @if (!actie.hidden?.(afname)) {
+        @if (isVisible(actie, afname)) {
           <li>
             <button
               type="button"

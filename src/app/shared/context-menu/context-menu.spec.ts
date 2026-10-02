@@ -1,3 +1,4 @@
+import { FlexibleConnectedPositionStrategy } from '@angular/cdk/overlay';
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ContextMenu, ContextMenuAction, ContextMenuSelection } from './context-menu';
@@ -11,7 +12,11 @@ interface Item {
 @Component({
   imports: [ContextMenu, ContextMenuTrigger],
   template: `
-    <app-context-menu #menu [actions]="actions" (actionSelected)="selected.push($event)" />
+    <app-context-menu
+      #menu
+      [actions]="alleenVerborgen() ? verborgen : actions"
+      (actionSelected)="selected.push($event)"
+    />
     @for (item of items(); track item.naam) {
       <div class="item" [appContextMenu]="menu" [appContextMenuContext]="item">{{ item.naam }}</div>
     }
@@ -20,8 +25,12 @@ interface Item {
 class Host {
   readonly actions: ContextMenuAction<Item>[] = [
     { id: 'open', label: 'Open' },
-    { id: 'maak-los', label: 'Maak los', hidden: (item) => !item.vast },
+    { id: 'maak-los', label: 'Maak los', visible: (item) => item.vast },
     { id: 'verwijder', label: 'Verwijder', disabled: (item) => item.vast },
+  ];
+  readonly alleenVerborgen = signal(false);
+  readonly verborgen: ContextMenuAction<Item>[] = [
+    { id: 'nooit', label: 'Nooit', visible: () => false },
   ];
   readonly items = signal<Item[]>([
     { naam: 'a', vast: true },
@@ -92,5 +101,54 @@ describe('ContextMenu', () => {
     expect(labels()).toEqual(['Open', 'Verwijder']);
     menuItems()[0].click();
     expect(fixture.componentInstance.selected[1].context).toEqual({ naam: 'a', vast: false });
+  });
+
+  it('does not open when no action is visible for the context', async () => {
+    fixture.componentInstance.alleenVerborgen.set(true);
+    await fixture.whenStable();
+
+    const target = fixture.nativeElement.querySelector('.item') as HTMLElement;
+    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+    target.dispatchEvent(event);
+    await fixture.whenStable();
+
+    expect(document.querySelector('[role="menu"]')).toBeNull();
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  describe('when scrolling', () => {
+    const scrollTo = (target: HTMLElement, rect: Partial<DOMRect>) => {
+      vi.spyOn(target, 'getBoundingClientRect').mockReturnValue({
+        left: 0,
+        top: 0,
+        right: 100,
+        bottom: 50,
+        ...rect,
+      } as DOMRect);
+      document.body.dispatchEvent(new Event('scroll'));
+    };
+
+    afterEach(() => vi.restoreAllMocks());
+
+    it('keeps the menu at the same spot on the element', async () => {
+      const target = await rightClick(0);
+      const { left, top } = target.getBoundingClientRect();
+      const setOrigin = vi.spyOn(FlexibleConnectedPositionStrategy.prototype, 'setOrigin');
+
+      scrollTo(target, { left: 30, top: 40 });
+
+      expect(setOrigin).toHaveBeenCalledWith({ x: 10 - left + 30, y: 10 - top + 40 });
+      expect(document.querySelector('[role="menu"]')).toBeTruthy();
+    });
+
+    it('closes the menu when the element is scrolled out of view', async () => {
+      const target = await rightClick(0);
+
+      scrollTo(target, { top: -100, bottom: -50 });
+      await fixture.whenStable();
+
+      expect(document.querySelector('[role="menu"]')).toBeNull();
+      expect(target.classList).not.toContain('context-menu-open');
+    });
   });
 });

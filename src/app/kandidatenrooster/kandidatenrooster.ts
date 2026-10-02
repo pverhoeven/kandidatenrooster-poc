@@ -3,6 +3,7 @@ import {
   ContextMenu,
   ContextMenuAction,
   ContextMenuSelection,
+  isVisible,
 } from '../shared/context-menu/context-menu';
 import { ContextMenuTrigger } from '../shared/context-menu/context-menu-trigger';
 import { Afname, AFNAMES, KOLOMMEN } from './afname';
@@ -28,12 +29,12 @@ const VERPLAATS: ContextMenuAction<Afname> = { id: 'verplaats', label: 'Verplaat
 const MAAK_LOS: ContextMenuAction<Afname> = {
   id: 'maak-los',
   label: 'Maak afname los',
-  hidden: (afname) => !afname.vastgezet,
+  visible: (afname) => afname.vastgezet,
 };
 const ZET_VAST: ContextMenuAction<Afname> = {
   id: 'zet-vast',
   label: 'Zet afname vast',
-  hidden: (afname) => afname.vastgezet,
+  visible: (afname) => !afname.vastgezet,
   disabled: (afname) => !!afname.conflict,
 };
 const NAAR_WERKVOORRAAD: ContextMenuAction<Afname> = {
@@ -58,6 +59,7 @@ export class Kandidatenrooster {
   protected readonly afnames = signal(AFNAMES);
   protected readonly werkvoorraad = signal<Afname[]>([]);
   protected readonly melding = signal('');
+  protected readonly isVisible = isVisible;
 
   protected readonly contextMenuActies = [
     VERPLAATS,

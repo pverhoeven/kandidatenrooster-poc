@@ -7,10 +7,18 @@ export interface ContextMenuAction<T> {
   id: string;
   /** Tekst in het menu. */
   label: string;
-  /** Verbergt de actie voor deze context, bijvoorbeeld "Maak los" bij een afname die al los is. */
-  hidden?: (context: T) => boolean;
+  /**
+   * Toont de actie alleen als dit voor de context `true` geeft, bijvoorbeeld "Maak los" alleen bij
+   * een vastgezette afname. Zonder `visible` is de actie altijd zichtbaar.
+   */
+  visible?: (context: T) => boolean;
   /** Toont de actie wel, maar maakt hem niet kiesbaar voor deze context. */
   disabled?: (context: T) => boolean;
+}
+
+/** Of de actie voor deze context getoond wordt. */
+export function isVisible<T>(action: ContextMenuAction<T>, context: T): boolean {
+  return action.visible?.(context) ?? true;
 }
 
 /** De gekozen actie, samen met de context waarvoor het menu was geopend. */
@@ -40,6 +48,8 @@ export interface ContextMenuTemplateContext<T> {
  * <div tabindex="0" [appContextMenu]="menu" [appContextMenuContext]="afname">…</div>
  * ```
  *
+ * Heeft een element geen zichtbare acties, dan opent het menu niet.
+ *
  * Het menu is bedoeld voor snelle toegang tot veelgebruikte acties. Zorg dat alle acties ook op
  * een andere manier bereikbaar zijn (bijvoorbeeld in een drawer), want niet iedere gebruiker weet
  * dat er een context menu is.
@@ -52,7 +62,7 @@ export interface ContextMenuTemplateContext<T> {
     <ng-template #menu let-context>
       <div cdkMenu class="context-menu" [attr.aria-label]="label()">
         @for (action of actions(); track action.id) {
-          @if (!action.hidden?.(context())) {
+          @if (isVisible(action, context())) {
             <button
               cdkMenuItem
               type="button"
@@ -76,6 +86,8 @@ export class ContextMenu<T> {
 
   /** Wordt uitgestuurd als de gebruiker een actie kiest; daarna sluit het menu. */
   readonly actionSelected = output<ContextMenuSelection<T>>();
+
+  protected readonly isVisible = isVisible;
 
   /** De menu-template; wordt gebruikt door de `appContextMenu`-directive. */
   readonly template = viewChild.required<TemplateRef<ContextMenuTemplateContext<T>>>('menu');
